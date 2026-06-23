@@ -123,6 +123,7 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </button>
 
+
           {/* Shopping Cart Button */}
           <button
             id="header-cart-btn"
@@ -131,9 +132,9 @@ export const Header: React.FC<HeaderProps> = ({
             aria-label={`Open shopping cart, ${cartCount} items`}
           >
             <ShoppingBag size={18} />
-            <span style={{ display: 'inline' }}>Cart</span>
+            <span className="cart-btn-text">Cart</span>
             {cartCount > 0 && (
-              <span className="badge-count" style={{ position: 'relative', top: 0, right: 0 }} aria-live="polite">
+              <span className="badge-count cart-badge" aria-live="polite">
                 {cartCount}
               </span>
             )}

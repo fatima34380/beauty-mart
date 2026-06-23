@@ -318,6 +318,14 @@ ul, ol { list-style: none; }
   background: var(--gradient-brand-hover);
   box-shadow: var(--shadow-glow);
 }
+.cart-btn-text {
+  display: inline;
+}
+.cart-badge {
+  position: relative;
+  top: 0;
+  right: 0;
+}
 
 .badge-count {
   position: absolute;
@@ -1864,6 +1872,25 @@ ul, ol { list-style: none; }
   .header-search { display: none; }
   .filter-row { flex-direction: column; align-items: stretch; }
   .sort-select { align-self: flex-start; }
+  
+  /* Header spacing optimization */
+  .site-header {
+    height: 70px;
+  }
+  .header-inner {
+    padding-inline: 0.5rem;
+  }
+  .action-btn {
+    width: 38px;
+    height: 38px;
+  }
+  .logo-brand {
+    font-size: 1.3rem;
+  }
+  .logo-sub {
+    font-size: 0.55rem;
+    letter-spacing: 1.5px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1880,6 +1907,46 @@ ul, ol { list-style: none; }
   .payment-options-grid { grid-template-columns: 1fr; }
   .checkout-actions-row { flex-direction: column; }
   .btn-checkout-nav { width: 100%; }
+
+  /* Header Cart Button collapse */
+  .cart-btn-text {
+    display: none;
+  }
+  .cart-action-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    padding: 0 !important;
+    justify-content: center;
+  }
+  .cart-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+  }
+  
+  /* Logo adjustments */
+  .logo-icon-wrap {
+    width: 32px;
+    height: 32px;
+  }
+  .logo-brand {
+    font-size: 1.1rem;
+  }
+  .logo-sub {
+    display: none; /* Hide subtitle on tiny mobile screens to prevent overlap */
+  }
+  
+  /* Container adjustments for compact styling */
+  .container {
+    padding-inline: 0.75rem;
+  }
+  
+  /* Aisle navigation scroll support */
+  .aisle-btn-tab {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
 }
 
 /* Portions Shelves Layout */
