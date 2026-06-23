@@ -75,7 +75,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   // Badges calculation
   const isSale = product.originalPrice > product.price;
   const isBestseller = product.rating >= 4.8 && product.reviews > 1000;
-  const isNew = product.id.includes('-12') || product.id.includes('-13') || product.id.includes('-6');
+  const isNew = 
+    product.id.includes('-12') || 
+    product.id.includes('-13') || 
+    product.id.includes('-6') || 
+    product.id.startsWith('fragrance') || 
+    product.id.startsWith('skincare') || 
+    product.id.startsWith('giftset');
 
   // Stagger load delay
   const animationDelay = `${(index % 10) * 0.05}s`;

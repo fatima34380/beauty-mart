@@ -16,20 +16,25 @@ import {
   ExternalLink,
   MessageCircle,
   Package,
+  Heart,
+  Star,
+  Gift,
+  Award,
+  ShieldCheck,
+  Truck,
+  RotateCcw,
+  ChevronLeft,
+  ChevronRight,
+  Mail,
+  Phone,
+  MapPin,
+  Plus,
+  Minus
 } from 'lucide-react';
 import { PRODUCTS, AISLES, Product } from '@/data/products';
 import { Header } from '@/components/UI/Header';
 import { ProductCard } from '@/components/ProductCard';
 import { CartDrawer, CartItem } from '@/components/CartDrawer';
-
-// Aisle icon mapping
-const AISLE_ICONS: Record<string, React.ReactNode> = {
-  lips:  <Palette size={16} />,
-  eyes:  <Eye     size={16} />,
-  face:  <Smile   size={16} />,
-  nails: <Gem     size={16} />,
-  tools: <Wrench  size={16} />,
-};
 
 // Category label formatting dictionary
 const CATEGORY_NAMES: Record<string, string> = {
@@ -56,7 +61,10 @@ const CATEGORY_NAMES: Record<string, string> = {
   brushset: 'Brush Set',
   blender: 'Beauty Blender',
   curler: 'Eyelash Curler',
-  cleaner: 'Brush Cleaner'
+  cleaner: 'Brush Cleaner',
+  fragrance: 'Fragrance',
+  skincare: 'Skincare',
+  giftset: 'Gift Set'
 };
 
 function formatCategoryName(category: string): string {
@@ -83,7 +91,7 @@ const AISLE_PORTIONS: Record<string, PortionDefinition[]> = {
   ],
   face: [
     { id: 'blush', name: 'Blush & Cheeks', emoji: '🌸', categories: ['blush'] },
-    { id: 'foundations_primers', name: 'Foundations & Primers', emoji: '🧴', categories: ['foundation', 'primer'] },
+    { id: 'foundations_primers', name: 'Foundations & Primers', emoji: '🧴', categories: ['foundation', 'primer', 'skincare'] },
     { id: 'concealers_correctors', name: 'Concealers & Correctors', emoji: '🧪', categories: ['concealer', 'corrector'] },
     { id: 'highlighters_powders', name: 'Highlighters & Powders', emoji: '💨', categories: ['highlighter', 'powder', 'settingspray'] }
   ],
@@ -91,7 +99,7 @@ const AISLE_PORTIONS: Record<string, PortionDefinition[]> = {
     { id: 'nails_polish', name: 'Nails & Nail Polishes', emoji: '💅', categories: ['nailpolish', 'nails'] }
   ],
   tools: [
-    { id: 'makeup_tools', name: 'Professional Brushes & Tools', emoji: '🪮', categories: ['brushset', 'blender', 'curler', 'cleaner'] }
+    { id: 'makeup_tools', name: 'Professional Brushes & Tools', emoji: '🪮', categories: ['brushset', 'blender', 'curler', 'cleaner', 'fragrance', 'giftset'] }
   ]
 };
 
@@ -156,21 +164,63 @@ export default function HomePage() {
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'bank' | 'easypaisa'>('cod');
   const [lastSubmittedOrder, setLastSubmittedOrder] = useState<OrderLog | null>(null);
 
+  // ── SLIDERS & DYNAMIC BLOCKS STATES ──
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [bestSellersIdx, setBestSellersIdx] = useState(0);
+
+  const testimonials = useMemo(() => [
+    {
+      quote: "The velvet matte lipsticks are an absolute dream. Long lasting, hydration-rich, and the rose gold packaging looks so stunning on my dressing table!",
+      name: "Sophia L.",
+      role: "Luxury Beauty Blogger",
+      avatar: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=150&auto=format&fit=crop"
+    },
+    {
+      quote: "I am obsessed with the wing stamp eyeliner. It creates the perfect, symmetric cat-eye in literally seconds. Truly professional grade!",
+      name: "Amina K.",
+      role: "Professional Makeup Artist",
+      avatar: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=150&auto=format&fit=crop"
+    },
+    {
+      quote: "Their damask rose perfume is breathtaking—smells exactly like a fresh botanical garden in Paris. Highly recommend the bridal gift set too!",
+      name: "Elena R.",
+      role: "Fragrance Enthusiast",
+      avatar: "https://images.unsplash.com/photo-1617897903246-719242758050?q=80&w=150&auto=format&fit=crop"
+    }
+  ], []);
+
+  // Best Sellers (Top Rated with high review counts)
+  const bestSellers = useMemo(() => {
+    return PRODUCTS.filter((p) => p.rating >= 4.8 && p.reviews > 400).slice(0, 6);
+  }, []);
+
+  const handlePrevBestSeller = () => {
+    setBestSellersIdx((prev) => (prev === 0 ? bestSellers.length - 3 : prev - 1));
+  };
+  const handleNextBestSeller = () => {
+    setBestSellersIdx((prev) => (prev >= bestSellers.length - 3 ? 0 : prev + 1));
+  };
+
+  // Testimonials auto-sliding
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [testimonials.length]);
+
   // ── LOAD THEME & STORAGE ON MOUNT ──
   useEffect(() => {
-    // Sync theme
     const savedTheme = localStorage.getItem('mr-theme') as 'light' | 'dark' | null;
     const initialTheme = savedTheme || 'dark';
     setTheme(initialTheme);
     document.documentElement.setAttribute('data-theme', initialTheme);
 
-    // Sync wishlist
     const savedWish = localStorage.getItem('mr-wishlist');
     if (savedWish) {
       setWishlist(JSON.parse(savedWish));
     }
 
-    // Sync orders
     const savedOrders = localStorage.getItem('mr-orders');
     if (savedOrders) {
       setOrders(JSON.parse(savedOrders));
@@ -184,7 +234,6 @@ export default function HomePage() {
       if (customEvent.detail?.message) {
         const id = Date.now() + Math.random();
         setToasts((prev) => [...prev, { id, message: customEvent.detail.message }]);
-        // Remove toast automatically after 3s
         setTimeout(() => {
           setToasts((prev) => prev.filter((t) => t.id !== id));
         }, 3000);
@@ -215,9 +264,8 @@ export default function HomePage() {
       localStorage.setItem('mr-theme', next);
       document.documentElement.setAttribute('data-theme', next);
       
-      // Toast notification
       window.dispatchEvent(new CustomEvent('show-toast', {
-        detail: { message: `Switched to ${next === 'light' ? 'Blushing Rose' : 'Night Onyx'} mode! 💅` }
+        detail: { message: `Switched to ${next === 'light' ? 'Blushing Rose' : 'Onyx Violet'} mode! 💅` }
       }));
       return next;
     });
@@ -238,7 +286,6 @@ export default function HomePage() {
   const filteredProducts = useMemo(() => {
     let result = [...PRODUCTS];
 
-    // Search query matches
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
@@ -249,21 +296,17 @@ export default function HomePage() {
           p.shades?.some((s) => s.name.toLowerCase().includes(q))
       );
     } else {
-      // Standard Aisle select
       result = result.filter((p) => p.aisle === activeAisle);
     }
 
-    // Category filter
     if (activeCategory !== 'all') {
       result = result.filter((p) => p.category === activeCategory);
     }
 
-    // Wishlist check
     if (showOnlyWishlisted) {
       result = result.filter((p) => wishlist.includes(p.id));
     }
 
-    // Sorting
     if (sortBy === 'price-low') {
       result.sort((a, b) => a.price - b.price);
     } else if (sortBy === 'price-high') {
@@ -277,7 +320,6 @@ export default function HomePage() {
     return result;
   }, [activeAisle, activeCategory, searchQuery, showOnlyWishlisted, wishlist, sortBy]);
 
-  // Unique categories in current viewed aisle
   const currentCategories = useMemo(() => {
     if (searchQuery.trim()) {
       const results = PRODUCTS.filter((p) => {
@@ -289,7 +331,6 @@ export default function HomePage() {
     return Array.from(new Set(PRODUCTS.filter((p) => p.aisle === activeAisle).map((p) => p.category)));
   }, [activeAisle, searchQuery]);
 
-  // Reset category when Aisle/Search changes
   useEffect(() => {
     setActiveCategory('all');
     if (searchQuery.trim()) {
@@ -350,7 +391,6 @@ export default function HomePage() {
   const handleCheckoutSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Verify fields
     if (!shippingForm.name || !shippingForm.phone || !shippingForm.address) {
       window.dispatchEvent(new CustomEvent('show-toast', {
         detail: { message: 'Please fill in all shipping details!' }
@@ -383,23 +423,20 @@ export default function HomePage() {
       paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : paymentMethod === 'bank' ? 'Bank Transfer' : 'EasyPaisa/JazzCash',
     };
 
-    // Save order
     const updatedOrders = [newOrder, ...orders];
     setOrders(updatedOrders);
     localStorage.setItem('mr-orders', JSON.stringify(updatedOrders));
 
-    // Clear cart and reset states
     setCartItems([]);
     setLastSubmittedOrder(newOrder);
     setCheckoutOpen(false);
 
-    // Fire Confetti!
     const confetti = (await import('canvas-confetti')).default;
     confetti({
       particleCount: 150,
       spread: 80,
       origin: { y: 0.6 },
-      colors: ['#e85a80', '#d4af37', '#ffffff'],
+      colors: ['#e5989b', '#e5c158', '#ffffff'],
     });
 
     window.dispatchEvent(new CustomEvent('show-toast', {
@@ -407,7 +444,6 @@ export default function HomePage() {
     }));
   };
 
-  // ── FORMAT WHATSAPP PREFILL TEXT ──
   const handleSendWhatsApp = (order: OrderLog) => {
     const itemsText = order.items
       .map((i) => `• ${i.qty}x ${i.name} (${i.shade}) - $${(i.price * i.qty).toFixed(2)}`)
@@ -437,9 +473,52 @@ ${itemsText}
 Thank you for shopping with MISS ROSE! 🌸`;
 
     const encoded = encodeURIComponent(message);
-    // Merchant phone number prefilled placeholder
     const whatsappUrl = `https://wa.me/923001234567?text=${encoded}`;
     window.open(whatsappUrl, '_blank');
+  };
+
+  // Helper mapping for category selection clicks in Category section
+  const handleCategoryCardClick = (catId: string) => {
+    switch (catId) {
+      case 'lipsticks':
+        setActiveAisle('lips');
+        setActiveCategory('lipstick');
+        break;
+      case 'foundations':
+        setActiveAisle('face');
+        setActiveCategory('foundation');
+        break;
+      case 'eye-makeup':
+        setActiveAisle('eyes');
+        setActiveCategory('all');
+        break;
+      case 'skincare':
+        setActiveAisle('face');
+        setActiveCategory('skincare');
+        break;
+      case 'brushes':
+        setActiveAisle('tools');
+        setActiveCategory('brushset');
+        break;
+      case 'fragrances':
+        setActiveAisle('tools');
+        setActiveCategory('fragrance');
+        break;
+      case 'new-arrivals':
+        setActiveAisle('lips');
+        setActiveCategory('all');
+        setSortBy('popular');
+        break;
+      case 'gift-sets':
+        setActiveAisle('tools');
+        setActiveCategory('giftset');
+        break;
+      default:
+        setActiveCategory('all');
+    }
+    setSearchQuery('');
+    setShowOnlyWishlisted(false);
+    document.getElementById('explore-collection')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const currentAisleData = AISLES.find((a) => a.id === activeAisle) ?? AISLES[0];
@@ -469,19 +548,23 @@ Thank you for shopping with MISS ROSE! 🌸`;
       {/* ── MAIN LAYOUT WRAPPER ── */}
       <main style={{ minHeight: '80vh' }}>
         
-        {/* ══ HERO BANNER ══ */}
+        {/* ══ HERO SECTION ══ */}
         {!searchQuery && !showOnlyWishlisted && (
           <section className="hero-banner" aria-label="Welcome Banner">
+            {/* Floating decors */}
+            <div className="floating-decor one" />
+            <div className="floating-decor two" />
+            
             <div className="container hero-grid">
               <div className="hero-text">
                 <div className="hero-badge">
-                  <span /> Custom Branded Cosmetics
+                  <span /> Premium Luxury Beauty
                 </div>
                 <h2 className="hero-title">
-                  Elevate Your Glamour <span>MISS ROSE Cosmetics</span>
+                  The New Standard of <span>Sensorial Elegance</span>
                 </h2>
                 <p className="hero-desc">
-                  Explore professional-grade, affordable cosmetics built for your everyday beauty needs. Discover rich velvet lipsticks, precision wing liner stamps, full coverage foundations, and luxury brushes.
+                  Step into a sensory world of French-formulated cosmetics, botanical skincare, and signature perfume blends. Crafted for unmatched longevity, texture, and visual brilliance.
                 </p>
                 <div className="hero-ctas">
                   <button
@@ -490,40 +573,39 @@ Thank you for shopping with MISS ROSE! 🌸`;
                       document.getElementById('explore-collection')?.scrollIntoView({ behavior: 'smooth' });
                     }}
                   >
-                    Shop Collection <ArrowRight size={16} />
+                    Explore Shop <ArrowRight size={14} />
                   </button>
                   <button
                     className="btn-luxury outline"
                     onClick={() => {
-                      setActiveAisle('face');
-                      document.getElementById('explore-collection')?.scrollIntoView({ behavior: 'smooth' });
+                      document.getElementById('bestsellers')?.scrollIntoView({ behavior: 'smooth' });
                     }}
                   >
-                    <Flame size={16} /> Bestsellers
+                    View Best Sellers
                   </button>
                 </div>
                 <div className="hero-stats">
                   <div className="stat-box">
-                    <h3>50+</h3>
-                    <p>Branded Items</p>
-                  </div>
-                  <div className="stat-box">
-                    <h3>5</h3>
-                    <p>Aisle Categories</p>
+                    <h3>60+</h3>
+                    <p>Luxe Formulations</p>
                   </div>
                   <div className="stat-box">
                     <h3>100%</h3>
-                    <p>Authentic</p>
+                    <p>Cruelty-Free</p>
+                  </div>
+                  <div className="stat-box">
+                    <h3>24H</h3>
+                    <p>Hydrating Shield</p>
                   </div>
                 </div>
               </div>
 
               <div className="hero-image-wrap">
                 <div className="hero-circle-bg" />
-                <div className="hero-main-img">
+                <div className="hero-main-img hero-fade">
                   <img
-                    src="https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=600&auto=format&fit=crop"
-                    alt="Miss Rose Premium Makeup Set Collection"
+                    src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600&auto=format&fit=crop"
+                    alt="Premium luxury cosmetics bottles arrangement"
                   />
                 </div>
               </div>
@@ -531,13 +613,60 @@ Thank you for shopping with MISS ROSE! 🌸`;
           </section>
         )}
 
-        {/* ══ PRODUCTS WRAPPER ══ */}
+        {/* ══ CATEGORY SECTION ══ */}
+        {!searchQuery && !showOnlyWishlisted && (
+          <section className="category-section" id="categories" aria-label="Beauty Categories">
+            <div className="container">
+              <div className="section-title-wrap">
+                <p className="section-subtitle">Curated Collections</p>
+                <h3 className="section-main-title">Shop by <span>Category</span></h3>
+                <div className="section-decor-line" />
+              </div>
+
+              <div className="category-grid">
+                <button className="category-card" onClick={() => handleCategoryCardClick('lipsticks')}>
+                  <div className="category-icon-box"><Palette size={20} /></div>
+                  <span className="category-title">Lipsticks</span>
+                </button>
+                <button className="category-card" onClick={() => handleCategoryCardClick('foundations')}>
+                  <div className="category-icon-box"><Smile size={20} /></div>
+                  <span className="category-title">Foundations</span>
+                </button>
+                <button className="category-card" onClick={() => handleCategoryCardClick('eye-makeup')}>
+                  <div className="category-icon-box"><Eye size={20} /></div>
+                  <span className="category-title">Eye Makeup</span>
+                </button>
+                <button className="category-card" onClick={() => handleCategoryCardClick('skincare')}>
+                  <div className="category-icon-box"><Gem size={20} /></div>
+                  <span className="category-title">Skincare</span>
+                </button>
+                <button className="category-card" onClick={() => handleCategoryCardClick('brushes')}>
+                  <div className="category-icon-box"><Wrench size={20} /></div>
+                  <span className="category-title">Brushes</span>
+                </button>
+                <button className="category-card" onClick={() => handleCategoryCardClick('fragrances')}>
+                  <div className="category-icon-box"><Flame size={20} /></div>
+                  <span className="category-title">Fragrances</span>
+                </button>
+                <button className="category-card" onClick={() => handleCategoryCardClick('new-arrivals')}>
+                  <div className="category-icon-box"><SparklesIcon size={20} /></div>
+                  <span className="category-title">New Arrivals</span>
+                </button>
+                <button className="category-card" onClick={() => handleCategoryCardClick('gift-sets')}>
+                  <div className="category-icon-box"><Gift size={20} /></div>
+                  <span className="category-title">Gift Sets</span>
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ══ PRODUCTS LISTING WRAPPER ══ */}
         <section
           id="explore-collection"
-          style={{ paddingBottom: '3rem' }}
+          style={{ paddingBottom: '5rem' }}
           className={!searchQuery && !showOnlyWishlisted ? '' : 'no-hero-offset'}
         >
-          
           {/* ══ AISLE NAV BAR ══ */}
           {!searchQuery && !showOnlyWishlisted && (
             <div className="aisle-nav">
@@ -551,8 +680,7 @@ Thank you for shopping with MISS ROSE! 🌸`;
                       aria-selected={activeAisle === aisle.id}
                       onClick={() => setActiveAisle(aisle.id)}
                     >
-                      {AISLE_ICONS[aisle.id]}
-                      <span>{aisle.name}</span>
+                      {aisle.name.replace(' Aisle', '')}
                     </button>
                   ))}
                 </div>
@@ -569,7 +697,7 @@ Thank you for shopping with MISS ROSE! 🌸`;
                   '--aisle-accent': currentAisleData.color,
                 } as React.CSSProperties}
               >
-                <p style={{ textTransform: 'uppercase', fontSize: '0.72rem', fontWeight: 800, color: 'var(--primary)', letterSpacing: '1px' }}>
+                <p className="section-subtitle" style={{ marginBottom: '0.25rem' }}>
                   Explore Collection
                 </p>
                 <h3 className="aisle-info-title">{currentAisleData.name}</h3>
@@ -588,7 +716,7 @@ Thank you for shopping with MISS ROSE! 🌸`;
                     setShowOnlyWishlisted(false);
                   }}
                 >
-                  All Categories
+                  All Items
                 </button>
                 {currentCategories.map((cat) => (
                   <button
@@ -606,18 +734,18 @@ Thank you for shopping with MISS ROSE! 🌸`;
 
               {/* Sorting options */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Sort by:</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Sort by:</span>
                 <select
                   className="sort-select"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                   aria-label="Sort product items"
                 >
-                  <option value="default">Popular Default</option>
+                  <option value="default">Popularity</option>
                   <option value="price-low">Price: Low to High</option>
                   <option value="price-high">Price: High to Low</option>
-                  <option value="rating">Top Rated Stars</option>
-                  <option value="popular">Review Counts</option>
+                  <option value="rating">Top Rated</option>
+                  <option value="popular">Most Reviewed</option>
                 </select>
               </div>
             </div>
@@ -625,8 +753,8 @@ Thank you for shopping with MISS ROSE! 🌸`;
             {/* Search results banner */}
             {searchQuery && (
               <div style={{ marginBlock: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>
-                  Search Results for: <span style={{ color: 'var(--primary)', fontWeight: 700 }}>&ldquo;{searchQuery}&rdquo;</span>
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontWeight: 400 }}>
+                  Search Results for: <span style={{ color: 'var(--primary-deep)', fontStyle: 'italic' }}>&ldquo;{searchQuery}&rdquo;</span>
                 </h3>
                 <button className="category-chip" onClick={() => setSearchQuery('')}>Clear Search</button>
               </div>
@@ -635,8 +763,8 @@ Thank you for shopping with MISS ROSE! 🌸`;
             {/* Wishlist Active banner */}
             {showOnlyWishlisted && (
               <div style={{ marginBlock: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>
-                  Wishlist Collection: <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{wishlist.length} item{wishlist.length !== 1 ? 's' : ''}</span>
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontWeight: 400 }}>
+                  Wishlist Collection: <span style={{ color: 'var(--primary-deep)', fontStyle: 'italic' }}>{wishlist.length} item{wishlist.length !== 1 ? 's' : ''}</span>
                 </h3>
                 <button className="category-chip" onClick={() => setShowOnlyWishlisted(false)}>Show All Products</button>
               </div>
@@ -645,7 +773,7 @@ Thank you for shopping with MISS ROSE! 🌸`;
             {/* Product Card Grid */}
             {filteredProducts.length > 0 ? (
               (activeCategory === 'all' && !searchQuery && !showOnlyWishlisted && AISLE_PORTIONS[activeAisle]) ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', width: '100%' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '3.5rem', width: '100%' }}>
                   {AISLE_PORTIONS[activeAisle].map((portion) => {
                     const portionProducts = filteredProducts.filter((p) =>
                       portion.categories.includes(p.category)
@@ -691,13 +819,336 @@ Thank you for shopping with MISS ROSE! 🌸`;
               )
             ) : (
               <div style={{ textAlign: 'center', paddingBlock: '6rem', color: 'var(--text-muted)' }}>
-                <SparklesIcon size={44} style={{ marginInline: 'auto', marginBottom: '1rem', opacity: 0.4 }} />
+                <SparklesIcon size={40} style={{ marginInline: 'auto', marginBottom: '1rem', opacity: 0.3 }} />
                 <h3>No Cosmetics Found</h3>
-                <p style={{ fontSize: '0.88rem', marginTop: '0.5rem' }}>
-                  Try resetting the filters, clear your search text, or verify your wishlist contents!
+                <p style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>
+                  Reset filters or verify your search details to explore our luxury collections!
                 </p>
               </div>
             )}
+          </div>
+        </section>
+
+        {/* ══ PROMOTIONAL BANNER SECTION ══ */}
+        {!searchQuery && !showOnlyWishlisted && (
+          <section className="promo-banner-section" aria-label="Exclusive Promotion">
+            <div className="container">
+              <div className="promo-banner-box">
+                <div className="promo-banner-grid">
+                  <div>
+                    <p className="promo-banner-subtitle">Limited Time Invitation</p>
+                    <h3 className="promo-banner-title">Elevate Your Vanity with <span>20% Off</span></h3>
+                    <p className="promo-banner-desc">
+                      Experience the luxurious touch of premium cosmetics. Place your first order today and unlock exclusive benefits.
+                    </p>
+                    <div className="promo-coupon-wrap">
+                      <span className="coupon-label">Use Code</span>
+                      <span className="coupon-code">LUXE20</span>
+                    </div>
+                    <div>
+                      <button 
+                        className="btn-luxury primary"
+                        onClick={() => {
+                          document.getElementById('explore-collection')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                      >
+                        Claim Offer Now
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="promo-banner-img">
+                      <img 
+                        src="https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=600&auto=format&fit=crop" 
+                        alt="Miss Rose makeup set flatlay" 
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ══ WHY CHOOSE US SECTION ══ */}
+        {!searchQuery && !showOnlyWishlisted && (
+          <section className="why-choose-section" id="about" aria-label="Brand Quality Pillars">
+            <div className="container">
+              <div className="section-title-wrap">
+                <p className="section-subtitle">Our Promise</p>
+                <h3 className="section-main-title">Crafted with <span>Integrity</span></h3>
+                <div className="section-decor-line" />
+              </div>
+
+              <div className="why-grid">
+                <div className="why-card">
+                  <div className="why-card-icon"><Award size={20} /></div>
+                  <div className="why-card-content">
+                    <h4>Premium Quality</h4>
+                    <p>Finest dermatologically tested oils, velvet pigments, and organic active ingredients.</p>
+                  </div>
+                </div>
+                <div className="why-card">
+                  <div className="why-card-icon"><Heart size={20} /></div>
+                  <div className="why-card-content">
+                    <h4>Cruelty Free</h4>
+                    <p>100% vegan friendly, ethical sourcing, and absolutely zero animal testing.</p>
+                  </div>
+                </div>
+                <div className="why-card">
+                  <div className="why-card-icon"><ShieldCheck size={20} /></div>
+                  <div className="why-card-content">
+                    <h4>Long Lasting</h4>
+                    <p>Designed for 16-hour endurance, transfer-proof finishes, and vibrant pigments.</p>
+                  </div>
+                </div>
+                <div className="why-card">
+                  <div className="why-card-icon"><Truck size={20} /></div>
+                  <div className="why-card-content">
+                    <h4>Secure Payment</h4>
+                    <p>Complete safety via multiple mobile wallet, credit card, and door delivery steps.</p>
+                  </div>
+                </div>
+                <div className="why-card">
+                  <div className="why-card-icon"><RotateCcw size={20} /></div>
+                  <div className="why-card-content">
+                    <h4>Easy Returns</h4>
+                    <p>Hassle-free 7-day returns if any shade or product does not match your exact desire.</p>
+                  </div>
+                </div>
+                <div className="why-card">
+                  <div className="why-card-icon"><Truck size={20} /></div>
+                  <div className="why-card-content">
+                    <h4>Complimentary Shipping</h4>
+                    <p>Quick doorstep delivery across Pakistan, free for all luxury orders above $50.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ══ BEST SELLERS SECTION (SLIDER CAROUSEL) ══ */}
+        {!searchQuery && !showOnlyWishlisted && (
+          <section className="bestsellers-section" id="bestsellers" aria-label="Bestselling Products Slider">
+            <div className="container">
+              <div className="section-title-wrap" style={{ textAlign: 'left', marginBottom: '1rem' }}>
+                <p className="section-subtitle">Customer Favorites</p>
+                <h3 className="section-main-title">The <span>Bestsellers</span> List</h3>
+                <div className="section-decor-line" style={{ margin: '1rem 0 0' }} />
+              </div>
+
+              {/* Slider Arrow Controls */}
+              <div className="slider-controls-row">
+                <button 
+                  className="slider-arrow-btn" 
+                  onClick={handlePrevBestSeller}
+                  aria-label="Previous bestseller"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <button 
+                  className="slider-arrow-btn" 
+                  onClick={handleNextBestSeller}
+                  aria-label="Next bestseller"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+
+              {/* Visible Products Grid */}
+              <div className="products-grid">
+                {bestSellers.slice(bestSellersIdx, bestSellersIdx + 3).map((prod, idx) => (
+                  <ProductCard
+                    key={`bestseller-${prod.id}`}
+                    product={prod}
+                    onAddToCart={handleAddToCart}
+                    onToggleWishlist={toggleWishlist}
+                    isWishlisted={wishlist.includes(prod.id)}
+                    index={idx}
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ══ TESTIMONIALS SECTION ══ */}
+        {!searchQuery && !showOnlyWishlisted && (
+          <section className="testimonials-section" aria-label="Customer Reviews">
+            <div className="container">
+              <div className="testimonials-slider-container">
+                <div className="testimonial-card-wrap">
+                  <div className="testimonial-card">
+                    <div className="rating-stars" style={{ color: 'var(--accent-gold)' }}>
+                      <Star size={16} fill="currentColor" stroke="none" />
+                      <Star size={16} fill="currentColor" stroke="none" />
+                      <Star size={16} fill="currentColor" stroke="none" />
+                      <Star size={16} fill="currentColor" stroke="none" />
+                      <Star size={16} fill="currentColor" stroke="none" />
+                    </div>
+                    
+                    <p className="testimonial-quote">
+                      &ldquo;{testimonials[activeTestimonial].quote}&rdquo;
+                    </p>
+
+                    <div className="testimonial-profile">
+                      <div className="testimonial-avatar">
+                        <img 
+                          src={testimonials[activeTestimonial].avatar} 
+                          alt={testimonials[activeTestimonial].name} 
+                        />
+                      </div>
+                      <div className="testimonial-meta">
+                        <h4 className="testimonial-name">{testimonials[activeTestimonial].name}</h4>
+                        <span className="testimonial-role">{testimonials[activeTestimonial].role}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Slider Dots Indicator */}
+                <div className="testimonial-dots">
+                  {testimonials.map((_, idx) => (
+                    <button 
+                      key={idx}
+                      className={`test-dot ${activeTestimonial === idx ? 'active' : ''}`}
+                      onClick={() => setActiveTestimonial(idx)}
+                      aria-label={`Show review ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ══ EDITORIAL BLOG SECTION ══ */}
+        {!searchQuery && !showOnlyWishlisted && (
+          <section className="blog-section" id="blog" aria-label="Beauty Articles">
+            <div className="container">
+              <div className="section-title-wrap">
+                <p className="section-subtitle">Editorial Journal</p>
+                <h3 className="section-main-title">The Beauty <span>Edit</span></h3>
+                <div className="section-decor-line" />
+              </div>
+
+              <div className="blog-grid">
+                <article className="blog-card">
+                  <div className="blog-img-box">
+                    <img 
+                      src="https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=600&auto=format&fit=crop" 
+                      alt="Luxury perfume bottles" 
+                    />
+                  </div>
+                  <div className="blog-card-body">
+                    <span className="blog-meta-row">June 20, 2026 • Fragrance</span>
+                    <h4 className="blog-title">The Art of Fragrance Layering: How to Design Your Signature Scent</h4>
+                    <p className="blog-desc">Explore our masterclass guidelines on blending botanical notes and smoky sandalwood base scents to match your elegance.</p>
+                    <button className="blog-btn-more" onClick={() => window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Journal article loading... 📖' } }))}>
+                      Read More <ArrowRight size={12} />
+                    </button>
+                  </div>
+                </article>
+
+                <article className="blog-card">
+                  <div className="blog-img-box">
+                    <img 
+                      src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=600&auto=format&fit=crop" 
+                      alt="Luminous serum application" 
+                    />
+                  </div>
+                  <div className="blog-card-body">
+                    <span className="blog-meta-row">May 15, 2026 • Skincare</span>
+                    <h4 className="blog-title">Parisian Glow: A Step-by-Step Dewy Skincare and Base Guide</h4>
+                    <p className="blog-desc">Unlock secrets to achieving that effortless, glass-like dewy complexion using nourishing serums and hydrating liquid primers.</p>
+                    <button className="blog-btn-more" onClick={() => window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Journal article loading... 📖' } }))}>
+                      Read More <ArrowRight size={12} />
+                    </button>
+                  </div>
+                </article>
+
+                <article className="blog-card">
+                  <div className="blog-img-box">
+                    <img 
+                      src="https://images.unsplash.com/photo-1627384113743-6bd5a479fffd?q=80&w=600&auto=format&fit=crop" 
+                      alt="Eye makeup cosmetics stamp brush" 
+                    />
+                  </div>
+                  <div className="blog-card-body">
+                    <span className="blog-meta-row">April 28, 2026 • Makeup</span>
+                    <h4 className="blog-title">Mastering the Cat-Eye: MUA Tips for Symmetric Eye Definition</h4>
+                    <p className="blog-desc">A complete guide to utilizing dual-ended stamps, fine liners, and lashes for absolute precision and drama.</p>
+                    <button className="blog-btn-more" onClick={() => window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Journal article loading... 📖' } }))}>
+                      Read More <ArrowRight size={12} />
+                    </button>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ══ INSTAGRAM GALLERY MASONRY ══ */}
+        {!searchQuery && !showOnlyWishlisted && (
+          <section className="instagram-section" aria-label="Instagram Showcase Gallery">
+            <div className="container">
+              <div className="section-title-wrap">
+                <p className="section-subtitle">Visual Inspiration</p>
+                <h3 className="section-main-title">On the <span>Grid</span></h3>
+                <div className="section-decor-line" />
+              </div>
+
+              <div className="instagram-grid">
+                <div className="gallery-item wide">
+                  <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600&auto=format&fit=crop" alt="Grid cosmetic vanity styling" />
+                  <div className="gallery-overlay"><Mail size={24} /></div>
+                </div>
+                <div className="gallery-item tall">
+                  <img src="https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=600&auto=format&fit=crop" alt="Floral beauty rose case setup" />
+                  <div className="gallery-overlay"><Mail size={24} /></div>
+                </div>
+                <div className="gallery-item">
+                  <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=600&auto=format&fit=crop" alt="Nail paints array" />
+                  <div className="gallery-overlay"><Mail size={24} /></div>
+                </div>
+                <div className="gallery-item">
+                  <img src="https://images.unsplash.com/photo-1515688594390-b649af70d282?q=80&w=600&auto=format&fit=crop" alt="Eyeshadow palettes collection" />
+                  <div className="gallery-overlay"><Mail size={24} /></div>
+                </div>
+                <div className="gallery-item wide">
+                  <img src="https://images.unsplash.com/photo-1617897903246-719242758050?q=80&w=600&auto=format&fit=crop" alt="Liquid makeup application details" />
+                  <div className="gallery-overlay"><Mail size={24} /></div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ══ NEWSLETTER SUBSCRIPTION SECTION ══ */}
+        <section className="newsletter-section" id="newsletter" aria-label="Newsletter Signup">
+          <div className="container">
+            <div className="newsletter-box">
+              <h3 className="newsletter-title">Join our Beauty <span>Circle</span></h3>
+              <p className="newsletter-desc">
+                Subscribe to receive early access to limited collections, deluxe sample offers, and curated editorial advice.
+              </p>
+              <form className="newsletter-form" onSubmit={(e) => {
+                e.preventDefault();
+                (e.target as HTMLFormElement).reset();
+                window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Thank you for subscribing to our Circle! 🌸' } }));
+              }}>
+                <input 
+                  type="email" 
+                  required 
+                  placeholder="Enter your email address" 
+                  aria-label="Email Address for newsletter" 
+                />
+                <button type="submit" className="btn-subscribe">
+                  Subscribe
+                </button>
+              </form>
+            </div>
           </div>
         </section>
       </main>
@@ -705,22 +1156,79 @@ Thank you for shopping with MISS ROSE! 🌸`;
       {/* ── LUXURY SITE FOOTER ── */}
       <footer className="site-footer" role="contentinfo">
         <div className="container">
-          <div className="site-footer-logo-wrap">
-            <span className="site-footer-logo">MISS ROSE</span>
-            <span className="site-footer-sub">Official Store Reseller</span>
-          </div>
-          
-          <div className="site-footer-links">
-            <a href="#explore-collection" onClick={() => { setActiveAisle('lips'); setShowOnlyWishlisted(false); }}>Lips</a>
-            <a href="#explore-collection" onClick={() => { setActiveAisle('eyes'); setShowOnlyWishlisted(false); }}>Eyes</a>
-            <a href="#explore-collection" onClick={() => { setActiveAisle('face'); setShowOnlyWishlisted(false); }}>Face</a>
-            <a href="#explore-collection" onClick={() => { setActiveAisle('nails'); setShowOnlyWishlisted(false); }}>Nails</a>
-            <a href="#explore-collection" onClick={() => { setActiveAisle('tools'); setShowOnlyWishlisted(false); }}>Tools & Brushes</a>
+          <div className="footer-grid">
+            <div className="footer-brand-col">
+              <h4 className="site-footer-logo">MISS ROSE</h4>
+              <span className="site-footer-sub" style={{ alignSelf: 'flex-start' }}>Luxe Edition Reseller</span>
+              <p className="footer-brand-desc">
+                Bringing professional-grade sensorial cosmetics and premium botanical beauty lines direct to your vanity chest. Est. 2026.
+              </p>
+              <div className="footer-social-icons">
+                <a href="#" className="social-icon-btn" aria-label="Facebook"><Mail size={16} /></a>
+                <a href="#" className="social-icon-btn" aria-label="Instagram"><Phone size={16} /></a>
+                <a href="#" className="social-icon-btn" aria-label="Twitter"><MapPin size={16} /></a>
+              </div>
+            </div>
+
+            <div>
+              <h5 className="footer-title">Collections</h5>
+              <div className="footer-links-list">
+                <a href="#explore-collection" onClick={() => { setActiveAisle('lips'); setShowOnlyWishlisted(false); }}>Lips Aisle</a>
+                <a href="#explore-collection" onClick={() => { setActiveAisle('eyes'); setShowOnlyWishlisted(false); }}>Eyes Aisle</a>
+                <a href="#explore-collection" onClick={() => { setActiveAisle('face'); setShowOnlyWishlisted(false); }}>Face Aisle</a>
+                <a href="#explore-collection" onClick={() => { setActiveAisle('nails'); setShowOnlyWishlisted(false); }}>Nails Aisle</a>
+                <a href="#explore-collection" onClick={() => { setActiveAisle('tools'); setShowOnlyWishlisted(false); }}>Tools & Brushes</a>
+              </div>
+            </div>
+
+            <div>
+              <h5 className="footer-title">Help & Support</h5>
+              <div className="footer-links-list">
+                <a href="#" onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Support ticket open. 🎟️' } })); }}>Contact Support</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Track Order details loaded.' } })); }}>Track Order</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Delivery information.' } })); }}>Shipping & Returns</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'FAQs loaded.' } })); }}>FAQS & Guide</a>
+              </div>
+            </div>
+
+            <div>
+              <h5 className="footer-title">Contact Us</h5>
+              <div className="footer-links-list">
+                <span style={{ display: 'flex', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                  <MapPin size={14} style={{ flexShrink: 0 }} /> Karachi, Pakistan
+                </span>
+                <span style={{ display: 'flex', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                  <Phone size={14} /> +92 (300) 123 4567
+                </span>
+                <span style={{ display: 'flex', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                  <Mail size={14} /> concierge@missrose.pk
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <h5 className="footer-title">Newsletter</h5>
+              <p className="footer-news-desc">Signup for exclusive beauty updates.</p>
+              <form className="footer-news-input-wrap" onSubmit={(e) => {
+                e.preventDefault();
+                (e.target as HTMLFormElement).reset();
+                window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Subscribed successfully! 🌸' } }));
+              }}>
+                <input type="email" required placeholder="Enter email" aria-label="concierge newsletter email" />
+                <button type="submit" className="footer-news-submit" aria-label="Subscribe footer button"><ArrowRight size={14} /></button>
+              </form>
+            </div>
           </div>
 
-          <p className="site-footer-text">
-            © 2026 MISS ROSE Luxe Cosmetics Store · Designed with Premium Aesthetics for Professional Results.
-          </p>
+          <div className="footer-bottom-bar">
+            <p className="site-footer-text">
+              © 2026 MISS ROSE Luxe Cosmetics Store. Official Reseller. All Rights Reserved.
+            </p>
+            <div className="footer-bottom-links">
+              <a href="#" onClick={(e) => e.preventDefault()}>Privacy Policy</a>
+              <a href="#" onClick={(e) => e.preventDefault()}>Terms of Service</a>
+            </div>
+          </div>
         </div>
       </footer>
 
@@ -755,8 +1263,8 @@ Thank you for shopping with MISS ROSE! 🌸`;
               <X size={16} />
             </button>
 
-            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', marginBottom: '1.5rem' }}>
-              Finalize Order Checkout
+            <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.5rem', marginBottom: '1.5rem', fontWeight: 400 }}>
+              Checkout Order
             </h3>
 
             {/* Stepper Progress Bar */}
@@ -770,7 +1278,7 @@ Thank you for shopping with MISS ROSE! 🌸`;
               {/* STEP 1: Shipping Info */}
               {checkoutStep === 1 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <h4 style={{ fontWeight: 700, borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.4rem' }}>
+                  <h4 style={{ fontWeight: 600, borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.4rem', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     1. Delivery Details
                   </h4>
                   <div className="checkout-form-group">
@@ -831,7 +1339,7 @@ Thank you for shopping with MISS ROSE! 🌸`;
               {/* STEP 2: Payment Selector */}
               {checkoutStep === 2 && (
                 <div>
-                  <h4 style={{ fontWeight: 700, marginBottom: '1.25rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.4rem' }}>
+                  <h4 style={{ fontWeight: 600, marginBottom: '1.25rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.4rem', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     2. Select Payment Method
                   </h4>
                   <div className="payment-options-grid">
@@ -839,27 +1347,33 @@ Thank you for shopping with MISS ROSE! 🌸`;
                       className={`payment-box-selector ${paymentMethod === 'cod' ? 'active' : ''}`}
                       onClick={() => setPaymentMethod('cod')}
                     >
-                      <Check size={20} color={paymentMethod === 'cod' ? 'var(--primary)' : 'transparent'} />
-                      <p>Cash on Delivery</p>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Pay cash at your doorstep</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                        <p style={{ fontSize: '0.85rem' }}>Cash on Delivery</p>
+                        <Check size={16} color={paymentMethod === 'cod' ? 'var(--primary-deep)' : 'transparent'} />
+                      </div>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', alignSelf: 'flex-start' }}>Pay cash at your doorstep</span>
                     </div>
 
                     <div
                       className={`payment-box-selector ${paymentMethod === 'bank' ? 'active' : ''}`}
                       onClick={() => setPaymentMethod('bank')}
                     >
-                      <Check size={20} color={paymentMethod === 'bank' ? 'var(--primary)' : 'transparent'} />
-                      <p>Direct Bank Transfer</p>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Send payment to HBL Account</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                        <p style={{ fontSize: '0.85rem' }}>Direct Bank Transfer</p>
+                        <Check size={16} color={paymentMethod === 'bank' ? 'var(--primary-deep)' : 'transparent'} />
+                      </div>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', alignSelf: 'flex-start' }}>Send payment to HBL Account</span>
                     </div>
 
                     <div
                       className={`payment-box-selector ${paymentMethod === 'easypaisa' ? 'active' : ''}`}
                       onClick={() => setPaymentMethod('easypaisa')}
                     >
-                      <Check size={20} color={paymentMethod === 'easypaisa' ? 'var(--primary)' : 'transparent'} />
-                      <p>EasyPaisa / JazzCash</p>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Instant mobile wallets transfer</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                        <p style={{ fontSize: '0.85rem' }}>EasyPaisa / JazzCash</p>
+                        <Check size={16} color={paymentMethod === 'easypaisa' ? 'var(--primary-deep)' : 'transparent'} />
+                      </div>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', alignSelf: 'flex-start' }}>Instant mobile wallets transfer</span>
                     </div>
                   </div>
                   
@@ -869,7 +1383,7 @@ Thank you for shopping with MISS ROSE! 🌸`;
                       <p style={{ marginTop: '0.25rem', color: 'var(--text-secondary)' }}>
                         {paymentMethod === 'bank' 
                           ? 'Habib Bank Limited (HBL) - A/C: 1234-567890-123. Title: MISS ROSE STORE. Send screenshot receipt to WhatsApp.'
-                          : 'EasyPaisa Mobile Number: 0300-1234567. Account Title: Ayesha Khan. Forward the SMS verification message to WhatsApp.'}
+                          : 'EasyPaisa Mobile Number: 0300-1234567. Account Title: Ayesha Khan. Forward the SMS verification message to WhatsApp Concierge.'}
                       </p>
                     </div>
                   )}
@@ -879,7 +1393,7 @@ Thank you for shopping with MISS ROSE! 🌸`;
               {/* STEP 3: Review Details */}
               {checkoutStep === 3 && (
                 <div>
-                  <h4 style={{ fontWeight: 700, marginBottom: '1rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.4rem' }}>
+                  <h4 style={{ fontWeight: 600, marginBottom: '1rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.4rem', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     3. Review Order & Confirm
                   </h4>
                   
@@ -896,7 +1410,7 @@ Thank you for shopping with MISS ROSE! 🌸`;
                     ))}
                   </div>
 
-                  <div style={{ background: 'var(--bg-base)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', fontSize: '0.82rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <div style={{ background: 'var(--bg-base)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                     <p><strong>Deliver To:</strong> {shippingForm.name} ({shippingForm.phone})</p>
                     <p><strong>Address:</strong> {shippingForm.address}, {shippingForm.city}</p>
                     <p><strong>Payment Method:</strong> {paymentMethod.toUpperCase() === 'COD' ? 'Cash on Delivery' : paymentMethod.toUpperCase() === 'BANK' ? 'Bank Transfer' : 'Mobile Wallets (EasyPaisa)'}</p>
@@ -927,7 +1441,7 @@ Thank you for shopping with MISS ROSE! 🌸`;
                     className="btn-checkout-nav back"
                     onClick={() => setCheckoutStep((s) => s - 1)}
                   >
-                    Back Step
+                    Back
                   </button>
                 )}
 
@@ -945,7 +1459,7 @@ Thank you for shopping with MISS ROSE! 🌸`;
                       setCheckoutStep((s) => s + 1);
                     }}
                   >
-                    Proceed Next
+                    Next Step
                   </button>
                 ) : (
                   <button
@@ -953,7 +1467,7 @@ Thank you for shopping with MISS ROSE! 🌸`;
                     className="btn-checkout-nav next"
                     style={{ flex: 1 }}
                   >
-                    Confirm & Place Order
+                    Place Order
                   </button>
                 )}
               </div>
@@ -967,10 +1481,10 @@ Thank you for shopping with MISS ROSE! 🌸`;
         <div className="checkout-success-view">
           <div className="success-card-content">
             <span className="success-badge-blast" role="img" aria-label="Celebration Party Popper">🎉</span>
-            <h2 className="success-title">Order Received!</h2>
+            <h2 className="success-title">Order Logged</h2>
             <p className="success-desc">
-              Your Miss Rose order <strong>{lastSubmittedOrder.id}</strong> has been logged! 
-              To finalize processing, send details directly to our WhatsApp support team.
+              Your order <strong>{lastSubmittedOrder.id}</strong> has been successfully created. 
+              Please click the button below to send details directly to our WhatsApp concierge.
             </p>
 
             <div className="success-actions-col">
@@ -986,7 +1500,7 @@ Thank you for shopping with MISS ROSE! 🌸`;
                 className="btn-success-close"
                 onClick={() => setLastSubmittedOrder(null)}
               >
-                Close and Continue
+                Continue Shopping
               </button>
             </div>
           </div>
@@ -1002,14 +1516,14 @@ Thank you for shopping with MISS ROSE! 🌸`;
             </button>
 
             <h3 className="portal-title">
-              <Package size={22} color="var(--primary)" />
+              <Package size={22} color="var(--primary-deep)" />
               <span>Your Order History</span>
             </h3>
 
             {orders.length === 0 ? (
               <div className="portal-empty-state">
                 <ShoppingBag size={44} className="portal-empty-icon" />
-                <p>You haven't placed any orders yet. Place some orders to view history logs!</p>
+                <p>You haven't placed any orders yet. Once you make an order, it will appear here!</p>
               </div>
             ) : (
               <div className="orders-list-wrapper">

@@ -30,7 +30,10 @@ export interface Product {
     | 'brushset'
     | 'blender'
     | 'curler'
-    | 'cleaner';
+    | 'cleaner'
+    | 'fragrance'
+    | 'skincare'
+    | 'giftset';
   aisle: 'lips' | 'eyes' | 'face' | 'nails' | 'tools';
   price: number;
   originalPrice: number;
@@ -933,5 +936,89 @@ export const PRODUCTS: Product[] = [
     image: 'https://images.unsplash.com/photo-1515688594390-b649af70d282?q=80&w=600&auto=format&fit=crop',
     features: ['Suction cup back grips sink', 'Food-Grade Flexible Silicone', '4 Unique cleaning ridges', 'Gentle on fine hair bristles'],
     specs: { 'Material': 'Food-Grade Silicone', 'Size': '15cm x 11cm', 'Color': 'Pastel Pink' }
+  },
+  {
+    id: 'fragrance-1',
+    name: 'Château de Rose Eau de Parfum',
+    category: 'fragrance',
+    aisle: 'tools',
+    price: 85.00,
+    originalPrice: 120.00,
+    description: 'A luxurious floral perfume with notes of fresh damask rose, warm white musk, and powdery iris. Crafted in France.',
+    rating: 4.9,
+    reviews: 312,
+    image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=600&auto=format&fit=crop',
+    features: ['Long Lasting (8H+)', 'Premium French Rose Oil', 'Exquisite Glass Bottle', 'Elegant Magnetic Cap'],
+    specs: { 'Concentration': 'Eau de Parfum', 'Volume': '50ml', 'Origin': 'France' }
+  },
+  {
+    id: 'fragrance-2',
+    name: 'Nuit de Lavande Eau de Parfum',
+    category: 'fragrance',
+    aisle: 'tools',
+    price: 95.00,
+    originalPrice: 135.00,
+    description: 'A sophisticated aromatic blend of wild lavender, smoked vanilla pod, and rich sandalwood. Seductive and relaxing.',
+    rating: 4.8,
+    reviews: 184,
+    image: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=600&auto=format&fit=crop',
+    features: ['Warm & Aromatic', 'Sandalwood Base', 'Limited Edition Flask', 'Cruelty-Free Extract'],
+    specs: { 'Concentration': 'Eau de Parfum', 'Volume': '100ml', 'Origin': 'France' }
+  },
+  {
+    id: 'skincare-1',
+    name: 'Miss Rose Retinol Glow Serum',
+    category: 'skincare',
+    aisle: 'face',
+    price: 24.99,
+    originalPrice: 35.00,
+    description: 'A youth-boosting serum containing 1% pure retinol, squalane, and vitamin E. Minimizes fine lines and refines texture.',
+    rating: 4.8,
+    reviews: 428,
+    image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=600&auto=format&fit=crop',
+    features: ['1% Pure Retinol', 'Hydrating Squalane Base', 'Brightens Dark Spots', 'Fragrance-Free Formula'],
+    specs: { 'Skin Type': 'All Skin Types', 'Volume': '30ml', 'Form': 'Liquid Serum' }
+  },
+  {
+    id: 'skincare-2',
+    name: 'Miss Rose Hyaluronic Hydration Cream',
+    category: 'skincare',
+    aisle: 'face',
+    price: 18.50,
+    originalPrice: 28.00,
+    description: 'A lightweight gel-cream containing multi-molecular hyaluronic acid. Drenches the skin in 24-hour hydration.',
+    rating: 4.9,
+    reviews: 612,
+    image: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?q=80&w=600&auto=format&fit=crop',
+    features: ['24H Dewy Hydration', 'Multi-Molecular HA', 'Soothes Redness', 'Plumps Fine Lines'],
+    specs: { 'Texture': 'Light Gel-Cream', 'Weight': '50g', 'Key Ingredient': 'Hyaluronic Acid' }
+  },
+  {
+    id: 'giftset-1',
+    name: 'Miss Rose Luxury Bridal Gift Set',
+    category: 'giftset',
+    aisle: 'tools',
+    price: 49.99,
+    originalPrice: 75.00,
+    description: 'An ultimate compilation of Miss Rose bestsellers. Includes 3 lipsticks, a winged liner, a face primer, and a setting spray.',
+    rating: 4.9,
+    reviews: 512,
+    image: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=600&auto=format&fit=crop',
+    features: ['Complete Bridal Collection', 'Full Coverage Red Lips', 'Includes Setting Essentials', 'Luxe Rose Gold Gift Box'],
+    specs: { 'Pack Count': '5 Full-Size Products', 'Case': 'Luxury Magnetic Box', 'Gift Value': 'Worth $110' }
+  },
+  {
+    id: 'giftset-2',
+    name: 'Miss Rose Golden Glam Vanity Case',
+    category: 'giftset',
+    aisle: 'tools',
+    price: 59.99,
+    originalPrice: 90.00,
+    description: 'A beautiful leather-bound cosmetics case containing our best contour palette, highlighters, and eye stamp sets.',
+    rating: 4.8,
+    reviews: 320,
+    image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=600&auto=format&fit=crop',
+    features: ['Preloaded Vanity Case', 'Double-Deck Shelves', 'Premium Mirror Included', 'Secure Metal Latch'],
+    specs: { 'Case Material': 'Vegan Leather & Gold Trim', 'Weight': '1.2kg', 'Includes': '15 items inside' }
   }
 ];
