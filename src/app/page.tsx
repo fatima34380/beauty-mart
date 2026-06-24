@@ -168,6 +168,20 @@ export default function HomePage() {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [bestSellersIdx, setBestSellersIdx] = useState(0);
 
+  // ── HERO IMAGE ZOOM ANIMATION STATE ──
+  const [heroZoomed, setHeroZoomed] = useState(false);
+  const heroZoomTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleHeroImageHover = () => {
+    // Agar already zoomed hai to dobara trigger na ho
+    if (heroZoomed) return;
+    setHeroZoomed(true);
+    // 3 second baad zoom-out class hata do
+    heroZoomTimerRef.current = setTimeout(() => {
+      setHeroZoomed(false);
+    }, 3000);
+  };
+
   const testimonials = useMemo(() => [
     {
       quote: "The velvet matte lipsticks are an absolute dream. Long lasting, hydration-rich, and the rose gold packaging looks so stunning on my dressing table!",
@@ -606,6 +620,8 @@ Thank you for shopping with MISS ROSE! 🌸`;
                   <img
                     src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=600&auto=format&fit=crop"
                     alt="Premium luxury cosmetics bottles arrangement"
+                    className={heroZoomed ? 'zoom-animate' : ''}
+                    onMouseEnter={handleHeroImageHover}
                   />
                 </div>
               </div>
